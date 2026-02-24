@@ -1,0 +1,8 @@
+services:
+  app:
+    image: node:22-bookworm
+    working_dir: /workspace
+    environment:
+      CI: "true"
+    volumes:
+      - ./:/workspace
