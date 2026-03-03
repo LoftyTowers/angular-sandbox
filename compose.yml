@@ -1,8 +1,15 @@
 services:
   app:
-    image: node:22-bookworm
+    build:
+      context: .
+      dockerfile: Dockerfile
     working_dir: /workspace
-    environment:
-      CI: "true"
     volumes:
       - ./:/workspace
+      - app_node_modules:/workspace/node_modules
+    ports:
+      - "4200:4200"
+    command: npm run serve
+
+volumes:
+  app_node_modules:

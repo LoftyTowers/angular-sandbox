@@ -41,14 +41,3 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
-
-# Environment files
-/.env
-
-# Angular CLI legacy artefacts
-/.angular-cli.json
-/.ng/
-
-# TypeScript cache
-*.tsbuildinfo
-

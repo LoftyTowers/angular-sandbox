@@ -15,6 +15,7 @@ module.exports = defineConfig([
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      "no-console": "error",
       "@angular-eslint/directive-selector": [
         "error",
         {
@@ -31,6 +32,12 @@ module.exports = defineConfig([
           style: "kebab-case",
         },
       ],
+    },
+  },
+  {
+    files: ["**/*.spec.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
   {
