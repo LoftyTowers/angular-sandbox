@@ -1,0 +1,14 @@
+<section>
+  <app-page-title
+    title="Workshop Catalog"
+    subtitle="Browse workshops and add sessions to your basket"
+  />
+
+  <p class="basket-hint">Selected for basket: {{ selectedCount() }}</p>
+
+  <div class="workshop-grid">
+    @for (workshop of workshops(); track workshop.id) {
+      <app-workshop-card [workshop]="workshop" [currency]="currency()" (add)="onWorkshopAdded()" />
+    }
+  </div>
+</section>

@@ -1,0 +1,23 @@
+.workshop-card {
+  border: 1px solid #cdd3dc;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #fff;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+p {
+  margin: 0.25rem 0;
+}
+
+.price {
+  font-weight: 700;
+}
+
+button {
+  margin-top: 0.6rem;
+}

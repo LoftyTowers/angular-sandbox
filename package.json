@@ -8,9 +8,11 @@
     "serve": "ng serve --host 0.0.0.0 --port 4200 --poll 2000",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test --watch=false",
+    "test": "ng test",
+    "test:ci": "ng test --watch=false",
     "lint": "ng lint",
-    "format:check": "prettier --check ."
+    "format": "prettier --write \"src/**/*.{ts,html,css}\" package.json eslint.config.js tsconfig*.json",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css}\" package.json eslint.config.js tsconfig*.json"
   },
   "prettier": {
     "printWidth": 100,

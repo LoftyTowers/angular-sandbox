@@ -1,0 +1,10 @@
+.basket-hint {
+  margin: 0 0 1rem;
+  color: #364153;
+}
+
+.workshop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+}

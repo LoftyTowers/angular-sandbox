@@ -1,0 +1,7 @@
+<article class="workshop-card">
+  <h2>{{ workshop().title }}</h2>
+  <p>Level: {{ workshop().level }}</p>
+  <p>Duration: {{ workshop().durationHours }}h</p>
+  <p class="price">{{ workshop().price | currency: currency() }}</p>
+  <button type="button" (click)="addToBasket()">Add to basket</button>
+</article>

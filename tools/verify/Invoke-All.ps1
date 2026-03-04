@@ -15,6 +15,7 @@ function Invoke-Step {
     }
 }
 
+Invoke-Step -Name 'Format Check' -Command 'docker compose run --rm app npm run format:check'
 Invoke-Step -Name 'Lint' -Command 'docker compose run --rm app npm run lint'
-Invoke-Step -Name 'Unit Tests' -Command 'docker compose run --rm app npm test'
+Invoke-Step -Name 'Unit Tests (CI)' -Command 'docker compose run --rm app npm run test:ci'
 Invoke-Step -Name 'Build' -Command 'docker compose run --rm app npm run build'
