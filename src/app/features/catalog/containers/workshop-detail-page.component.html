@@ -1,0 +1,22 @@
+<section>
+  <a routerLink="/catalog">Back to catalog</a>
+  <app-page-title [title]="workshop.title" [subtitle]="workshop.description" />
+  <dl class="details-list">
+    <div>
+      <dt>Level</dt>
+      <dd>{{ workshop.level }}</dd>
+    </div>
+    <div>
+      <dt>Duration</dt>
+      <dd>{{ workshop.durationHours }} hours</dd>
+    </div>
+    <div>
+      <dt>Price</dt>
+      <dd>{{ workshop.price | currency: 'GBP' : 'symbol' : '1.0-0' }}</dd>
+    </div>
+    <div>
+      <dt>Tags</dt>
+      <dd>{{ workshop.tags.join(', ') }}</dd>
+    </div>
+  </dl>
+</section>

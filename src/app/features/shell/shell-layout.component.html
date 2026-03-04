@@ -1,0 +1,29 @@
+<div class="shell">
+  <header class="shell-header">
+    <a class="brand" routerLink="/catalog">Workshop Booking</a>
+
+    <nav aria-label="Main navigation" class="shell-nav">
+      <a routerLink="/catalog" routerLinkActive="active">Catalog</a>
+      <a routerLink="/basket" routerLinkActive="active">Basket</a>
+      <a routerLink="/checkout" routerLinkActive="active">Checkout</a>
+      <a routerLink="/account/login" routerLinkActive="active">Login</a>
+      <a routerLink="/account/bookings" routerLinkActive="active">Bookings</a>
+      <a routerLink="/admin" routerLinkActive="active">Admin</a>
+      @if (isAuthenticated()) {
+        <button type="button" class="signout" (click)="signOut()">Sign out</button>
+      }
+    </nav>
+  </header>
+
+  @if (navigationInProgress()) {
+    <div class="route-loading" aria-live="polite">Navigating...</div>
+  }
+
+  <main class="shell-content" [@routeTransition]="routeKey(outlet)">
+    <router-outlet #outlet="outlet" />
+  </main>
+
+  <footer class="shell-footer">
+    <small>Workshop Booking & Payments</small>
+  </footer>
+</div>

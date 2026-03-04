@@ -3,8 +3,39 @@
   color: #364153;
 }
 
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tag-filters a {
+  text-decoration: none;
+  color: #1e3a8a;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.tag-filters a.active {
+  background: #dbeafe;
+}
+
 .workshop-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1rem;
+}
+
+.catalog-item {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.details-link {
+  text-decoration: none;
+  color: #1d4ed8;
+  font-size: 0.875rem;
 }

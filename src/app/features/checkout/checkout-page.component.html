@@ -1,4 +1,8 @@
 <section>
   <app-page-title title="Checkout" subtitle="Payment flow is out of scope for this task" />
-  <p>Checkout integration will be implemented in a later milestone.</p>
+  <form [formGroup]="checkoutForm">
+    <label for="attendeeName">Attendee name</label>
+    <input id="attendeeName" formControlName="attendeeName" />
+  </form>
+  <p>Unsaved changes guard is active on this route.</p>
 </section>

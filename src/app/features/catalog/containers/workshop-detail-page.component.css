@@ -1,0 +1,20 @@
+.details-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.details-list div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+dt {
+  color: #475569;
+  font-size: 0.875rem;
+}
+
+dd {
+  margin: 0;
+  font-weight: 600;
+}

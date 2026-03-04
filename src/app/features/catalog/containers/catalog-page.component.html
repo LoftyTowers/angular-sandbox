@@ -4,11 +4,42 @@
     subtitle="Browse workshops and add sessions to your basket"
   />
 
+  <div class="tag-filters" aria-label="Catalog tags">
+    <a routerLink="/catalog" [queryParams]="{}" [class.active]="!selectedTag()">All</a>
+    <a
+      routerLink="/catalog"
+      [queryParams]="{ tag: 'angular' }"
+      [class.active]="selectedTag() === 'angular'"
+      >Angular</a
+    >
+    <a
+      routerLink="/catalog"
+      [queryParams]="{ tag: 'frontend' }"
+      [class.active]="selectedTag() === 'frontend'"
+      >Frontend</a
+    >
+    <a
+      routerLink="/catalog"
+      [queryParams]="{ tag: 'performance' }"
+      [class.active]="selectedTag() === 'performance'"
+      >Performance</a
+    >
+  </div>
+
   <p class="basket-hint">Selected for basket: {{ selectedCount() }}</p>
 
   <div class="workshop-grid">
     @for (workshop of workshops(); track workshop.id) {
-      <app-workshop-card [workshop]="workshop" [currency]="currency()" (add)="onWorkshopAdded()" />
+      <div class="catalog-item">
+        <app-workshop-card
+          [workshop]="workshop"
+          [currency]="currency()"
+          (add)="onWorkshopAdded()"
+        />
+        <a class="details-link" [routerLink]="['/catalog', workshop.id]">View details</a>
+      </div>
+    } @empty {
+      <p>No workshops match this filter.</p>
     }
   </div>
 </section>

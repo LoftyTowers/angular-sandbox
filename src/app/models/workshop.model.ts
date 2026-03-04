@@ -4,4 +4,6 @@ export interface Workshop {
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   durationHours: number;
   price: number;
+  tags: string[];
+  description: string;
 }
