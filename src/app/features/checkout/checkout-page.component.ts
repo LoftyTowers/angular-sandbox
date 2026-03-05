@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
@@ -20,6 +27,8 @@ import {
 } from './validators/checkout-form.validators';
 import { PromoCodeService } from './data/promo-code.service';
 import { PaymentCheckoutService } from './data/payment-checkout.service';
+import { AutofocusInvalidDirective } from '../../shared/directives/autofocus-invalid.directive';
+import { ToastService } from '../../core/services/toast.service';
 
 interface BillingAddressFormControls {
   line1: FormControl<string>;
@@ -48,20 +57,25 @@ const FORBIDDEN_WORDS = ['test', 'dummy', 'fake'];
 @Component({
   selector: 'app-checkout-page',
   standalone: true,
-  imports: [ReactiveFormsModule, PageTitleComponent],
+  imports: [ReactiveFormsModule, PageTitleComponent, AutofocusInvalidDirective],
   templateUrl: './checkout-page.component.html',
   styleUrl: './checkout-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckoutPageComponent {
+  @ViewChild(AutofocusInvalidDirective)
+  private readonly autofocusInvalidDirective?: AutofocusInvalidDirective;
+
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
   private readonly basketStore = inject(BasketStore);
   private readonly promoCodeService = inject(PromoCodeService);
   private readonly paymentCheckoutService = inject(PaymentCheckoutService);
+  private readonly toastService = inject(ToastService);
 
   protected readonly expectedAttendeeCount = this.basketStore.totalQuantity;
   protected readonly submitAttempted = signal(false);
+  protected readonly focusInvalidTrigger = signal(0);
   protected readonly isSubmitting = signal(false);
   protected readonly paymentErrorMessage = signal<string | null>(null);
   protected readonly submitMessage = signal<string | null>(null);
@@ -212,6 +226,9 @@ export class CheckoutPageComponent {
 
     if (this.checkoutForm.invalid || this.checkoutForm.pending) {
       this.checkoutForm.markAllAsTouched();
+      this.focusInvalidTrigger.update((value) => value + 1);
+      this.autofocusInvalidDirective?.focusFirstInvalidControl();
+      this.toastService.error('Please fix form errors before checkout.');
       return;
     }
 
@@ -256,10 +273,12 @@ export class CheckoutPageComponent {
       }
 
       this.submitMessage.set('Payment completed. Redirecting to your booking confirmation...');
+      this.toastService.success('Payment completed successfully.');
       this.checkoutForm.markAsPristine();
       await this.router.navigate(['/account/bookings', webhookResult.bookingId, 'confirmation']);
     } catch (error: unknown) {
       this.paymentErrorMessage.set(mapSubmitErrorToMessage(error));
+      this.toastService.error('Payment could not be completed.');
     } finally {
       this.isSubmitting.set(false);
     }

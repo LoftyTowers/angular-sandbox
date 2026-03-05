@@ -1,4 +1,5 @@
 <section>
   <app-page-title title="Admin" subtitle="Organiser workspace for managing workshops" />
   <p>Admin tools are restricted to non-production environments for now.</p>
+  <p *appIfRole="'admin'">Administrative actions are enabled for your role.</p>
 </section>

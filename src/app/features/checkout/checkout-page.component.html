@@ -12,7 +12,12 @@
     </section>
   }
 
-  <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+  <form
+    [formGroup]="checkoutForm"
+    (ngSubmit)="onSubmit()"
+    [appAutofocusInvalid]="focusInvalidTrigger()"
+    novalidate
+  >
     <div class="field">
       <label for="customerName">Customer name</label>
       <input

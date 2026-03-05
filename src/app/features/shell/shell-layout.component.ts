@@ -12,11 +12,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { routeTransitionAnimation } from '../../core/animations/route-transition.animation';
 import { AuthService } from '../../core/auth/auth.service';
+import { ToastHostComponent } from '../../shared/ui/toast-host/toast-host.component';
 
 @Component({
   selector: 'app-shell-layout',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, ToastHostComponent],
   templateUrl: './shell-layout.component.html',
   styleUrl: './shell-layout.component.css',
   animations: [routeTransitionAnimation],

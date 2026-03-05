@@ -1,0 +1,15 @@
+<section class="toast-host" aria-live="polite" aria-label="Notifications">
+  @for (toast of toasts(); track toast.id) {
+    <article
+      [@toastMotion]
+      class="toast"
+      [class.success]="toast.tone === 'success'"
+      [class.error]="toast.tone === 'error'"
+    >
+      <p>{{ toast.message }}</p>
+      <button type="button" (click)="dismiss(toast.id)" aria-label="Dismiss notification">
+        Close
+      </button>
+    </article>
+  }
+</section>

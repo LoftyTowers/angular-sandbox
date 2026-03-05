@@ -9,22 +9,17 @@
         <article class="basket-item">
           <div>
             <h2>{{ item.workshop.title }}</h2>
-            <p>{{ item.workshop.price | currency: currency : 'symbol' : '1.0-0' }} per ticket</p>
+            <app-price [amount]="item.workshop.price" [currency]="currency" label="Per ticket" />
           </div>
 
-          <label>
-            Quantity
-            <input
-              #quantityInput
-              type="number"
-              min="1"
-              [value]="item.quantity"
-              (change)="updateQuantity(item.workshop.id, quantityInput.valueAsNumber)"
-            />
-          </label>
+          <app-quantity-stepper
+            [value]="item.quantity"
+            label="Quantity"
+            (valueChange)="updateQuantity(item.workshop.id, $event)"
+          />
 
           <p class="line-total">
-            {{ item.workshop.price * item.quantity | currency: currency : 'symbol' : '1.0-0' }}
+            <app-price [amount]="item.workshop.price * item.quantity" [currency]="currency" />
           </p>
           <button type="button" (click)="removeItem(item.workshop.id)">Remove</button>
         </article>
@@ -33,7 +28,7 @@
 
     <section class="totals">
       <p>Total tickets: {{ totals().totalQuantity }}</p>
-      <p>Subtotal: {{ totals().subtotal | currency: currency : 'symbol' : '1.0-0' }}</p>
+      <p>Subtotal: <app-price [amount]="totals().subtotal" [currency]="currency" /></p>
     </section>
   }
 </section>

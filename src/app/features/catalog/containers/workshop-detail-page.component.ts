@@ -1,14 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BasketStore } from '../../basket/data/basket.store';
 import { Workshop } from '../../../models/workshop.model';
 import { PageTitleComponent } from '../../../shared/ui/page-title/page-title.component';
+import { PriceComponent } from '../../../shared/ui/price/price.component';
+import { QuantityStepperComponent } from '../../../shared/ui/quantity-stepper/quantity-stepper.component';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-workshop-detail-page',
   standalone: true,
-  imports: [CurrencyPipe, RouterLink, PageTitleComponent],
+  imports: [RouterLink, PageTitleComponent, PriceComponent, QuantityStepperComponent],
   templateUrl: './workshop-detail-page.component.html',
   styleUrl: './workshop-detail-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,19 +18,17 @@ import { PageTitleComponent } from '../../../shared/ui/page-title/page-title.com
 export class WorkshopDetailPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly basketStore = inject(BasketStore);
+  private readonly toastService = inject(ToastService);
 
   protected readonly workshop = this.route.snapshot.data['workshop'] as Workshop;
   protected ticketQuantity = 1;
 
-  protected decreaseQuantity(): void {
-    this.ticketQuantity = Math.max(1, this.ticketQuantity - 1);
-  }
-
-  protected increaseQuantity(): void {
-    this.ticketQuantity += 1;
-  }
-
   protected addToBasket(): void {
     this.basketStore.addWorkshop(this.workshop, this.ticketQuantity);
+    this.toastService.success('Workshop added to basket.');
+  }
+
+  protected updateQuantity(quantity: number): void {
+    this.ticketQuantity = quantity;
   }
 }

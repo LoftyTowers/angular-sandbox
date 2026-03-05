@@ -1,0 +1,25 @@
+:host {
+  display: inline-grid;
+  gap: 0.3rem;
+}
+
+.label {
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+button {
+  width: 2rem;
+  height: 2rem;
+}
+
+input {
+  width: 4rem;
+  text-align: center;
+}

@@ -1,0 +1,14 @@
+:host {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.label {
+  color: #475569;
+  font-size: 0.875rem;
+}
+
+.amount {
+  font-weight: 700;
+}

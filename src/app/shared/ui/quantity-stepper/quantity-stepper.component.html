@@ -1,0 +1,31 @@
+<div class="stepper">
+  <span class="label">{{ label() }}</span>
+  <div class="controls">
+    <button
+      type="button"
+      (click)="decrease()"
+      [disabled]="canDecrease()"
+      aria-label="Decrease quantity"
+    >
+      -
+    </button>
+    <input
+      type="number"
+      [attr.aria-label]="label()"
+      [min]="min()"
+      [max]="max()"
+      [step]="step()"
+      [value]="value()"
+      (change)="onInputChange(stepperInput.valueAsNumber)"
+      #stepperInput
+    />
+    <button
+      type="button"
+      (click)="increase()"
+      [disabled]="canIncrease()"
+      aria-label="Increase quantity"
+    >
+      +
+    </button>
+  </div>
+</div>
