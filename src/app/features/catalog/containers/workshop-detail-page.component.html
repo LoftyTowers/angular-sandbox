@@ -19,4 +19,15 @@
       <dd>{{ workshop.tags.join(', ') }}</dd>
     </div>
   </dl>
+
+  <section class="ticket-section">
+    <h2>Tickets</h2>
+    <div class="quantity-picker">
+      <button type="button" (click)="decreaseQuantity()" [disabled]="ticketQuantity <= 1">-</button>
+      <span>{{ ticketQuantity }}</span>
+      <button type="button" (click)="increaseQuantity()">+</button>
+    </div>
+    <button type="button" class="add-button" (click)="addToBasket()">Add to basket</button>
+    <a routerLink="/basket">Go to basket</a>
+  </section>
 </section>

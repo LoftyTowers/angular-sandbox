@@ -4,37 +4,41 @@
     subtitle="Browse workshops and add sessions to your basket"
   />
 
+  <label class="search-label" for="catalog-search">Search workshops</label>
+  <input
+    id="catalog-search"
+    class="search-input"
+    type="search"
+    [formControl]="searchControl"
+    placeholder="Search by title or description"
+  />
+
   <div class="tag-filters" aria-label="Catalog tags">
-    <a routerLink="/catalog" [queryParams]="{}" [class.active]="!selectedTag()">All</a>
-    <a
-      routerLink="/catalog"
-      [queryParams]="{ tag: 'angular' }"
-      [class.active]="selectedTag() === 'angular'"
-      >Angular</a
-    >
-    <a
-      routerLink="/catalog"
-      [queryParams]="{ tag: 'frontend' }"
-      [class.active]="selectedTag() === 'frontend'"
-      >Frontend</a
-    >
-    <a
-      routerLink="/catalog"
-      [queryParams]="{ tag: 'performance' }"
-      [class.active]="selectedTag() === 'performance'"
-      >Performance</a
-    >
+    <button type="button" [class.active]="!selectedTag()" (click)="selectTag(null)">All</button>
+    @for (tag of tags(); track tag) {
+      <button type="button" [class.active]="selectedTag() === tag" (click)="selectTag(tag)">
+        {{ tag }}
+      </button>
+    }
   </div>
 
   <p class="basket-hint">Selected for basket: {{ selectedCount() }}</p>
 
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="loading-message">Loading workshops...</p>
+  }
+
   <div class="workshop-grid">
-    @for (workshop of workshops(); track workshop.id) {
+    @for (workshop of filteredWorkshops(); track workshop.id) {
       <div class="catalog-item">
         <app-workshop-card
           [workshop]="workshop"
           [currency]="currency()"
-          (add)="onWorkshopAdded()"
+          (add)="onWorkshopAdded($event)"
         />
         <a class="details-link" [routerLink]="['/catalog', workshop.id]">View details</a>
       </div>

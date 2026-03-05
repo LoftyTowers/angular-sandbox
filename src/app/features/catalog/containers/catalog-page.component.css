@@ -3,6 +3,20 @@
   color: #364153;
 }
 
+.search-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.search-input {
+  width: min(32rem, 100%);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  margin-bottom: 1rem;
+}
+
 .tag-filters {
   display: flex;
   flex-wrap: wrap;
@@ -10,16 +24,17 @@
   margin-bottom: 1rem;
 }
 
-.tag-filters a {
-  text-decoration: none;
+.tag-filters button {
   color: #1e3a8a;
+  background: #fff;
   border: 1px solid #bfdbfe;
   border-radius: 999px;
   padding: 0.25rem 0.75rem;
   font-size: 0.875rem;
+  cursor: pointer;
 }
 
-.tag-filters a.active {
+.tag-filters button.active {
   background: #dbeafe;
 }
 
@@ -38,4 +53,12 @@
   text-decoration: none;
   color: #1d4ed8;
   font-size: 0.875rem;
+}
+
+.error-message {
+  color: #b91c1c;
+}
+
+.loading-message {
+  color: #334155;
 }

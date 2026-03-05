@@ -6,13 +6,14 @@ import { routes } from './app.routes';
 import { provideAppConfig } from './core/config/app-config.providers';
 import { GlobalErrorHandler } from './core/error-handling/global-error-handler';
 import { apiBaseUrlInterceptor } from './core/interceptors/api-base-url.interceptor';
+import { mockApiInterceptor } from './core/interceptors/mock-api.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimations(),
-    provideHttpClient(withInterceptors([apiBaseUrlInterceptor])),
+    provideHttpClient(withInterceptors([apiBaseUrlInterceptor, mockApiInterceptor])),
     provideAppConfig(),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
   ],

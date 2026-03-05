@@ -1,4 +1,39 @@
 <section>
   <app-page-title title="Basket" subtitle="Review selected workshops before checkout" />
-  <p>Your basket is currently empty.</p>
+
+  @if (items().length === 0) {
+    <p>Your basket is currently empty.</p>
+  } @else {
+    <div class="basket-list">
+      @for (item of items(); track item.workshop.id) {
+        <article class="basket-item">
+          <div>
+            <h2>{{ item.workshop.title }}</h2>
+            <p>{{ item.workshop.price | currency: currency : 'symbol' : '1.0-0' }} per ticket</p>
+          </div>
+
+          <label>
+            Quantity
+            <input
+              #quantityInput
+              type="number"
+              min="1"
+              [value]="item.quantity"
+              (change)="updateQuantity(item.workshop.id, quantityInput.valueAsNumber)"
+            />
+          </label>
+
+          <p class="line-total">
+            {{ item.workshop.price * item.quantity | currency: currency : 'symbol' : '1.0-0' }}
+          </p>
+          <button type="button" (click)="removeItem(item.workshop.id)">Remove</button>
+        </article>
+      }
+    </div>
+
+    <section class="totals">
+      <p>Total tickets: {{ totals().totalQuantity }}</p>
+      <p>Subtotal: {{ totals().subtotal | currency: currency : 'symbol' : '1.0-0' }}</p>
+    </section>
+  }
 </section>

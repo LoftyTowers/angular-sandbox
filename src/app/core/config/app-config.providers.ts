@@ -6,6 +6,7 @@ const developmentConfig: AppConfig = {
   apiBaseUrl: environment.apiBaseUrl,
   environmentName: 'development',
   currency: environment.defaultCurrency,
+  mockApi: environment.mockApi,
 };
 
 function createProductionConfig(): AppConfig {
@@ -13,6 +14,7 @@ function createProductionConfig(): AppConfig {
     apiBaseUrl: environment.apiBaseUrl,
     environmentName: environment.production ? 'production' : 'development',
     currency: environment.defaultCurrency,
+    mockApi: environment.mockApi,
   };
 }
 

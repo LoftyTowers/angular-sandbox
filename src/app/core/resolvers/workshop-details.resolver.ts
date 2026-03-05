@@ -1,9 +1,10 @@
 import { inject } from '@angular/core';
 import { RedirectCommand, ResolveFn, Router } from '@angular/router';
+import { catchError, of, switchMap } from 'rxjs';
 import { Workshop } from '../../models/workshop.model';
 import { WorkshopCatalogService } from '../services/workshop-catalog.service';
 
-export const workshopDetailsResolver: ResolveFn<Workshop> = (route) => {
+export const workshopDetailsResolver: ResolveFn<Workshop | RedirectCommand> = (route) => {
   const workshopId = route.paramMap.get('workshopId');
   const router = inject(Router);
   const catalog = inject(WorkshopCatalogService);
@@ -12,10 +13,8 @@ export const workshopDetailsResolver: ResolveFn<Workshop> = (route) => {
     return new RedirectCommand(router.parseUrl('/catalog'));
   }
 
-  const workshop = catalog.getWorkshopById(workshopId);
-  if (!workshop) {
-    return new RedirectCommand(router.parseUrl('/catalog'));
-  }
-
-  return workshop;
+  return of(workshopId).pipe(
+    switchMap((id) => catalog.getWorkshopById(id)),
+    catchError(() => of(new RedirectCommand(router.parseUrl('/catalog')))),
+  );
 };

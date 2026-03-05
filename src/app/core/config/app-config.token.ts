@@ -4,6 +4,12 @@ export interface AppConfig {
   apiBaseUrl: string;
   environmentName: string;
   currency: string;
+  mockApi: {
+    enabled: boolean;
+    minLatencyMs: number;
+    maxLatencyMs: number;
+    transientFailureRate: number;
+  };
 }
 
 export const APP_CONFIG = new InjectionToken<AppConfig>('APP_CONFIG');

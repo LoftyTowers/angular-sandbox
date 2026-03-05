@@ -15,7 +15,7 @@ export class WorkshopCardComponent {
   readonly currency = input.required<string>();
   readonly add = output<Workshop>();
 
-  addToBasket(): void {
+  protected addToBasket(): void {
     this.add.emit(this.workshop());
   }
 }

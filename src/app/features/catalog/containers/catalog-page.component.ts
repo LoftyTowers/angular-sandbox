@@ -1,38 +1,69 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { map } from 'rxjs';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { debounceTime, map, startWith } from 'rxjs/operators';
 import { APP_CONFIG } from '../../../core/config/app-config.token';
-import { WorkshopCatalogService } from '../../../core/services/workshop-catalog.service';
+import { BasketStore } from '../../basket/data/basket.store';
 import { Workshop } from '../../../models/workshop.model';
 import { PageTitleComponent } from '../../../shared/ui/page-title/page-title.component';
 import { WorkshopCardComponent } from '../components/workshop-card.component';
+import { CatalogStore } from '../data/catalog.store';
 
 @Component({
   selector: 'app-catalog-page',
   standalone: true,
-  imports: [RouterLink, PageTitleComponent, WorkshopCardComponent],
+  imports: [ReactiveFormsModule, RouterLink, PageTitleComponent, WorkshopCardComponent],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CatalogStore],
 })
 export class CatalogPageComponent {
   private readonly appConfig = inject(APP_CONFIG);
-  private readonly route = inject(ActivatedRoute);
-  private readonly catalog = inject(WorkshopCatalogService);
+  private readonly catalogStore = inject(CatalogStore);
+  private readonly basketStore = inject(BasketStore);
 
-  protected readonly selectedTag = toSignal(
-    this.route.queryParamMap.pipe(map((params) => params.get('tag'))),
-    { initialValue: null },
+  protected readonly searchControl = new FormControl('', { nonNullable: true });
+  protected readonly selectedTag = signal<string | null>(null);
+  protected readonly searchTerm = toSignal(
+    this.searchControl.valueChanges.pipe(
+      startWith(this.searchControl.value),
+      debounceTime(250),
+      map((value) => value.trim().toLowerCase()),
+    ),
+    { initialValue: '' },
   );
-  protected readonly workshops = computed<Workshop[]>(() =>
-    this.catalog.getWorkshops(this.selectedTag()),
-  );
+  protected readonly workshops = this.catalogStore.workshops;
+  protected readonly tags = this.catalogStore.tags;
+  protected readonly loading = this.catalogStore.loading;
+  protected readonly error = this.catalogStore.error;
+  protected readonly filteredWorkshops = computed<readonly Workshop[]>(() => {
+    const searchTerm = this.searchTerm();
+    const selectedTag = this.selectedTag();
 
-  protected readonly selectedCount = signal(0);
+    return this.workshops().filter((workshop) => {
+      const matchesTag = selectedTag ? workshop.tags.includes(selectedTag) : true;
+      const matchesSearch = searchTerm
+        ? workshop.title.toLowerCase().includes(searchTerm) ||
+          workshop.description.toLowerCase().includes(searchTerm)
+        : true;
+
+      return matchesTag && matchesSearch;
+    });
+  });
+  protected readonly selectedCount = this.basketStore.totalQuantity;
   protected readonly currency = computed(() => this.appConfig.currency);
 
-  protected onWorkshopAdded(): void {
-    this.selectedCount.update((count) => count + 1);
+  constructor() {
+    this.catalogStore.load();
+  }
+
+  protected onWorkshopAdded(workshop: Workshop): void {
+    this.basketStore.addWorkshop(workshop);
+  }
+
+  protected selectTag(tag: string | null): void {
+    this.selectedTag.set(tag);
   }
 }

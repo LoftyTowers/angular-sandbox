@@ -18,3 +18,23 @@ dd {
   margin: 0;
   font-weight: 600;
 }
+
+.ticket-section {
+  margin-top: 1.5rem;
+}
+
+.quantity-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.quantity-picker button {
+  width: 2rem;
+  height: 2rem;
+}
+
+.add-button {
+  margin-right: 0.75rem;
+}
