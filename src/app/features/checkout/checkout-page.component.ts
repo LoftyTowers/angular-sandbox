@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
   FormArray,
@@ -8,6 +9,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 import { BasketStore } from '../basket/data/basket.store';
 import { PageTitleComponent } from '../../shared/ui/page-title/page-title.component';
 import {
@@ -16,6 +19,7 @@ import {
   promoDisposableEmailDomainValidator,
 } from './validators/checkout-form.validators';
 import { PromoCodeService } from './data/promo-code.service';
+import { PaymentCheckoutService } from './data/payment-checkout.service';
 
 interface BillingAddressFormControls {
   line1: FormControl<string>;
@@ -29,6 +33,11 @@ interface CheckoutFormControls {
   email: FormControl<string>;
   phone: FormControl<string>;
   billingAddress: FormGroup<BillingAddressFormControls>;
+  cardholderName: FormControl<string>;
+  cardNumber: FormControl<string>;
+  expiryMonth: FormControl<string>;
+  expiryYear: FormControl<string>;
+  cvc: FormControl<string>;
   acceptTerms: FormControl<boolean>;
   promoCode: FormControl<string>;
   attendeeNames: FormArray<FormControl<string>>;
@@ -46,11 +55,15 @@ const FORBIDDEN_WORDS = ['test', 'dummy', 'fake'];
 })
 export class CheckoutPageComponent {
   private readonly formBuilder = inject(NonNullableFormBuilder);
+  private readonly router = inject(Router);
   private readonly basketStore = inject(BasketStore);
   private readonly promoCodeService = inject(PromoCodeService);
+  private readonly paymentCheckoutService = inject(PaymentCheckoutService);
 
   protected readonly expectedAttendeeCount = this.basketStore.totalQuantity;
   protected readonly submitAttempted = signal(false);
+  protected readonly isSubmitting = signal(false);
+  protected readonly paymentErrorMessage = signal<string | null>(null);
   protected readonly submitMessage = signal<string | null>(null);
   protected readonly checkoutForm = this.formBuilder.group<CheckoutFormControls>(
     {
@@ -75,6 +88,24 @@ export class CheckoutPageComponent {
         city: this.formBuilder.control('', [Validators.required, Validators.maxLength(80)]),
         postalCode: this.formBuilder.control('', [Validators.required, Validators.maxLength(16)]),
       }),
+      cardholderName: this.formBuilder.control('', [
+        Validators.required,
+        Validators.maxLength(100),
+        forbiddenWordsValidator(FORBIDDEN_WORDS),
+      ]),
+      cardNumber: this.formBuilder.control('', [
+        Validators.required,
+        Validators.pattern(/^[0-9 ]{13,23}$/),
+      ]),
+      expiryMonth: this.formBuilder.control('', [
+        Validators.required,
+        Validators.pattern(/^(0[1-9]|1[0-2])$/),
+      ]),
+      expiryYear: this.formBuilder.control('', [
+        Validators.required,
+        Validators.pattern(/^\d{2}$/),
+      ]),
+      cvc: this.formBuilder.control('', [Validators.required, Validators.pattern(/^\d{3,4}$/)]),
       acceptTerms: this.formBuilder.control(false, [Validators.requiredTrue]),
       promoCode: this.formBuilder.control('', {
         validators: [Validators.maxLength(32), forbiddenWordsValidator(FORBIDDEN_WORDS)],
@@ -107,16 +138,7 @@ export class CheckoutPageComponent {
   }
 
   protected onSubmit(): void {
-    this.submitAttempted.set(true);
-    this.submitMessage.set(null);
-
-    if (this.checkoutForm.invalid || this.checkoutForm.pending) {
-      this.checkoutForm.markAllAsTouched();
-      return;
-    }
-
-    this.submitMessage.set('Checkout details are valid. Payment integration is in the next task.');
-    this.checkoutForm.markAsPristine();
+    void this.submit();
   }
 
   protected showErrors(control: AbstractControl | null): boolean {
@@ -146,6 +168,26 @@ export class CheckoutPageComponent {
       errors.push('Email address needs attention.');
     }
 
+    if (this.showErrors(this.checkoutForm.controls.cardholderName)) {
+      errors.push('Cardholder name needs attention.');
+    }
+
+    if (this.showErrors(this.checkoutForm.controls.cardNumber)) {
+      errors.push('Card number needs attention.');
+    }
+
+    if (this.showErrors(this.checkoutForm.controls.expiryMonth)) {
+      errors.push('Card expiry month needs attention.');
+    }
+
+    if (this.showErrors(this.checkoutForm.controls.expiryYear)) {
+      errors.push('Card expiry year needs attention.');
+    }
+
+    if (this.showErrors(this.checkoutForm.controls.cvc)) {
+      errors.push('Card security code needs attention.');
+    }
+
     if (this.showErrors(this.checkoutForm.controls.acceptTerms)) {
       errors.push('You must accept the terms to continue.');
     }
@@ -162,6 +204,66 @@ export class CheckoutPageComponent {
 
     return errors;
   }
+
+  private async submit(): Promise<void> {
+    this.submitAttempted.set(true);
+    this.paymentErrorMessage.set(null);
+    this.submitMessage.set(null);
+
+    if (this.checkoutForm.invalid || this.checkoutForm.pending) {
+      this.checkoutForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    try {
+      const normalizedPayload = normalizeCheckoutPayload(this.checkoutForm.getRawValue());
+      const intent = await firstValueFrom(
+        this.paymentCheckoutService.createPaymentIntent({
+          amount: this.basketStore.subtotal(),
+          currency: 'GBP',
+          customerName: normalizedPayload.customerName,
+          customerEmail: normalizedPayload.email,
+        }),
+      );
+
+      const confirmation = await firstValueFrom(
+        this.paymentCheckoutService.confirmPayment({
+          paymentIntentId: intent.paymentIntentId,
+          clientSecret: intent.clientSecret,
+          paymentMethod: normalizedPayload.paymentMethod,
+        }),
+      );
+
+      if (confirmation.status === 'declined') {
+        this.paymentErrorMessage.set('Your card was declined. Please use a different card.');
+        return;
+      }
+
+      const webhookResult = await firstValueFrom(
+        this.paymentCheckoutService.deliverWebhook({
+          eventId: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+          eventType: 'payment_intent.succeeded',
+          paymentIntentId: confirmation.paymentIntentId,
+        }),
+      );
+
+      if (!webhookResult.bookingId) {
+        this.paymentErrorMessage.set(
+          'Payment completed, but booking confirmation could not be created.',
+        );
+        return;
+      }
+
+      this.submitMessage.set('Payment completed. Redirecting to your booking confirmation...');
+      this.checkoutForm.markAsPristine();
+      await this.router.navigate(['/account/bookings', webhookResult.bookingId, 'confirmation']);
+    } catch (error: unknown) {
+      this.paymentErrorMessage.set(mapSubmitErrorToMessage(error));
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
 }
 
 function createAttendeeControls(
@@ -177,4 +279,91 @@ function createAttendeeControl(formBuilder: NonNullableFormBuilder): FormControl
     Validators.maxLength(100),
     forbiddenWordsValidator(FORBIDDEN_WORDS),
   ]);
+}
+
+function normalizeCheckoutPayload(rawValue: CheckoutFormValue): {
+  customerName: string;
+  email: string;
+  paymentMethod: {
+    cardNumber: string;
+    cardholderName: string;
+    expiryMonth: string;
+    expiryYear: string;
+    cvc: string;
+  };
+} {
+  return {
+    customerName: sanitizeText(rawValue.customerName),
+    email: sanitizeEmail(rawValue.email),
+    paymentMethod: {
+      cardNumber: sanitizeCardNumber(rawValue.cardNumber),
+      cardholderName: sanitizeText(rawValue.cardholderName),
+      expiryMonth: sanitizeDigits(rawValue.expiryMonth, 2),
+      expiryYear: sanitizeDigits(rawValue.expiryYear, 2),
+      cvc: sanitizeDigits(rawValue.cvc, 4),
+    },
+  };
+}
+
+function sanitizeText(value: string): string {
+  const withoutControlChars = Array.from(value)
+    .filter((character) => {
+      const codePoint = character.codePointAt(0);
+      return codePoint !== undefined && codePoint >= 32 && codePoint !== 127;
+    })
+    .join('');
+
+  return withoutControlChars.replace(/\s+/g, ' ').trim();
+}
+
+function sanitizeEmail(value: string): string {
+  return sanitizeText(value).toLowerCase();
+}
+
+function sanitizeCardNumber(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
+function sanitizeDigits(value: string, maxLength: number): string {
+  return value.replace(/\D/g, '').slice(0, maxLength);
+}
+
+function mapSubmitErrorToMessage(error: unknown): string {
+  if (!(error instanceof HttpErrorResponse)) {
+    return 'Payment could not be completed right now. Please try again.';
+  }
+
+  if (error.status === 503) {
+    return 'Payment service is temporarily unavailable. Please retry in a moment.';
+  }
+
+  if (error.status === 400) {
+    return 'Payment details were invalid. Please review and try again.';
+  }
+
+  if (error.status === 409) {
+    return 'Payment was not finalized for booking. Please try confirming again.';
+  }
+
+  return 'Payment could not be completed right now. Please try again.';
+}
+
+interface CheckoutFormValue {
+  customerName: string;
+  email: string;
+  phone: string;
+  billingAddress: {
+    line1: string;
+    line2: string;
+    city: string;
+    postalCode: string;
+  };
+  cardholderName: string;
+  cardNumber: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cvc: string;
+  acceptTerms: boolean;
+  promoCode: string;
+  attendeeNames: string[];
 }

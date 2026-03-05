@@ -1,0 +1,22 @@
+<section>
+  <app-page-title title="Booking Confirmed" subtitle="Your payment and booking were processed" />
+
+  @if (loading()) {
+    <p>Loading booking confirmation...</p>
+  } @else if (errorMessage(); as error) {
+    <p class="error-message" aria-live="polite">{{ error }}</p>
+  } @else if (booking(); as bookingRecord) {
+    <p>
+      Your booking reference is <strong>{{ bookingRecord.id }}</strong
+      >.
+    </p>
+    <p>{{ bookingRecord.customerName }}, your workshop booking is confirmed.</p>
+    <p>
+      Receipt sent to <strong>{{ bookingRecord.customerEmail }}</strong
+      >. Amount paid:
+      <strong>{{ bookingRecord.currency }} {{ bookingRecord.amount.toFixed(2) }}</strong
+      >.
+    </p>
+    <p><a routerLink="/account/bookings">Go to bookings</a></p>
+  }
+</section>

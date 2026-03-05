@@ -154,6 +154,109 @@
       </div>
     </fieldset>
 
+    <fieldset>
+      <legend>Payment details</legend>
+
+      <div class="field">
+        <label for="cardholderName">Cardholder name</label>
+        <input
+          id="cardholderName"
+          type="text"
+          formControlName="cardholderName"
+          [attr.aria-describedby]="
+            showErrors(checkoutForm.controls.cardholderName) ? 'cardholderName-error' : null
+          "
+        />
+        @if (showErrors(checkoutForm.controls.cardholderName)) {
+          <p id="cardholderName-error" class="field-error" aria-live="polite">
+            @if (checkoutForm.controls.cardholderName.hasError('required')) {
+              Cardholder name is required.
+            } @else if (checkoutForm.controls.cardholderName.hasError('maxlength')) {
+              Cardholder name is too long.
+            } @else if (checkoutForm.controls.cardholderName.hasError('forbiddenWords')) {
+              Cardholder name contains blocked words.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="cardNumber">Card number</label>
+        <input
+          id="cardNumber"
+          type="text"
+          inputmode="numeric"
+          autocomplete="cc-number"
+          formControlName="cardNumber"
+          [attr.aria-describedby]="
+            showErrors(checkoutForm.controls.cardNumber) ? 'cardNumber-error' : null
+          "
+        />
+        @if (showErrors(checkoutForm.controls.cardNumber)) {
+          <p id="cardNumber-error" class="field-error" aria-live="polite">
+            @if (checkoutForm.controls.cardNumber.hasError('required')) {
+              Card number is required.
+            } @else if (checkoutForm.controls.cardNumber.hasError('pattern')) {
+              Card number must contain only digits and spaces.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="field-group">
+        <div class="field">
+          <label for="expiryMonth">Expiry month (MM)</label>
+          <input
+            id="expiryMonth"
+            type="text"
+            inputmode="numeric"
+            autocomplete="cc-exp-month"
+            formControlName="expiryMonth"
+            [attr.aria-describedby]="
+              showErrors(checkoutForm.controls.expiryMonth) ? 'expiryMonth-error' : null
+            "
+          />
+          @if (showErrors(checkoutForm.controls.expiryMonth)) {
+            <p id="expiryMonth-error" class="field-error" aria-live="polite">
+              Enter month as MM (01-12).
+            </p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="expiryYear">Expiry year (YY)</label>
+          <input
+            id="expiryYear"
+            type="text"
+            inputmode="numeric"
+            autocomplete="cc-exp-year"
+            formControlName="expiryYear"
+            [attr.aria-describedby]="
+              showErrors(checkoutForm.controls.expiryYear) ? 'expiryYear-error' : null
+            "
+          />
+          @if (showErrors(checkoutForm.controls.expiryYear)) {
+            <p id="expiryYear-error" class="field-error" aria-live="polite">Enter year as YY.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="cvc">CVC</label>
+          <input
+            id="cvc"
+            type="password"
+            inputmode="numeric"
+            autocomplete="cc-csc"
+            formControlName="cvc"
+            [attr.aria-describedby]="showErrors(checkoutForm.controls.cvc) ? 'cvc-error' : null"
+          />
+          @if (showErrors(checkoutForm.controls.cvc)) {
+            <p id="cvc-error" class="field-error" aria-live="polite">Enter a 3 or 4 digit CVC.</p>
+          }
+        </div>
+      </div>
+    </fieldset>
+
     <div class="field">
       <label for="promoCode">Promo code (optional)</label>
       <input
@@ -247,13 +350,23 @@
       }
     </div>
 
-    <button type="submit" [disabled]="checkoutForm.invalid || checkoutForm.pending">
-      Complete checkout
+    <button
+      type="submit"
+      [disabled]="checkoutForm.invalid || checkoutForm.pending || isSubmitting()"
+    >
+      @if (isSubmitting()) {
+        Processing payment...
+      } @else {
+        Complete checkout
+      }
     </button>
   </form>
 
   @if (submitMessage(); as message) {
     <p class="success-message" aria-live="polite">{{ message }}</p>
+  }
+  @if (paymentErrorMessage(); as paymentError) {
+    <p class="field-error" aria-live="polite">{{ paymentError }}</p>
   }
 
   <p>Unsaved changes guard is active on this route.</p>

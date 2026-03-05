@@ -24,6 +24,14 @@ export const ACCOUNT_ROUTES: Routes = [
         loadComponent: () =>
           import('./bookings-page.component').then((m) => m.BookingsPageComponent),
       },
+      {
+        path: 'bookings/:bookingId/confirmation',
+        data: { animation: 'AccountBookingConfirmation' },
+        loadComponent: () =>
+          import('./booking-confirmation-page.component').then(
+            (m) => m.BookingConfirmationPageComponent,
+          ),
+      },
     ],
   },
 ];
