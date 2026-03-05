@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { provideRouter, Router } from '@angular/router';
 import { APP_CONFIG } from '../../core/config/app-config.token';
+import { apiErrorInterceptor } from '../../core/interceptors/api-error.interceptor';
 import { apiBaseUrlInterceptor } from '../../core/interceptors/api-base-url.interceptor';
 import { mockApiInterceptor } from '../../core/interceptors/mock-api.interceptor';
 import { BasketStore } from '../basket/data/basket.store';
@@ -41,7 +42,9 @@ describe('CheckoutPageComponent', () => {
       imports: [CheckoutPageComponent],
       providers: [
         provideRouter([]),
-        provideHttpClient(withInterceptors([apiBaseUrlInterceptor, mockApiInterceptor])),
+        provideHttpClient(
+          withInterceptors([apiErrorInterceptor, apiBaseUrlInterceptor, mockApiInterceptor]),
+        ),
         {
           provide: APP_CONFIG,
           useValue: {

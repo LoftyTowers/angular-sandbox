@@ -1,5 +1,18 @@
 <section>
   <app-page-title title="Admin" subtitle="Organiser workspace for managing workshops" />
-  <p>Admin tools are restricted to non-production environments for now.</p>
+  <p>Admin tools include operational diagnostics and role-gated controls.</p>
   <p *appIfRole="'admin'">Administrative actions are enabled for your role.</p>
+
+  <section *appIfRole="'admin'" aria-label="Operational logs">
+    <h3>Operational logs</h3>
+    @if (isProduction) {
+      <p>In production, logs are stored in a ring buffer for safe export.</p>
+      <button type="button" (click)="exportLogs()">Export logs</button>
+      @if (exportedMessage(); as message) {
+        <p aria-live="polite">{{ message }}</p>
+      }
+    } @else {
+      <p>Development mode logs are written to the browser console.</p>
+    }
+  </section>
 </section>

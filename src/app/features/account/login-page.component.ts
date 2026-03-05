@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { AuthenticationError, DomainError } from '../../core/error-handling/domain-errors';
 import { PageTitleComponent } from '../../shared/ui/page-title/page-title.component';
 
 @Component({
@@ -40,9 +41,21 @@ export class LoginPageComponent {
       next: () => {
         void this.router.navigateByUrl(this.returnUrl);
       },
-      error: () => {
-        this.loginError = 'Invalid credentials. Try demo@workshops.test or admin@workshops.test.';
+      error: (error: unknown) => {
+        this.loginError = mapLoginError(error);
       },
     });
   }
+}
+
+function mapLoginError(error: unknown): string {
+  if (error instanceof AuthenticationError) {
+    return 'Invalid credentials. Try demo@workshops.test or admin@workshops.test.';
+  }
+
+  if (error instanceof DomainError) {
+    return error.userMessage;
+  }
+
+  return 'Unable to sign in right now. Please try again.';
 }

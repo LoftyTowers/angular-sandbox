@@ -49,24 +49,24 @@ describe('mockApiInterceptor payment flow', () => {
     http = TestBed.inject(HttpClient);
   });
 
-  it('returns declined status for declined card number', async () => {
+  it('returns payment-required error for declined card number', async () => {
     const intent = await createIntent(http);
 
-    const response = await firstValueFrom(
-      http.post<ConfirmPaymentResponse>('/payments/confirm', {
-        paymentIntentId: intent.paymentIntentId,
-        clientSecret: intent.clientSecret,
-        paymentMethod: {
-          cardNumber: '4000000000000002',
-          cardholderName: 'Casey Smith',
-          expiryMonth: '10',
-          expiryYear: '29',
-          cvc: '123',
-        },
-      }),
-    );
-
-    expect(response.status).toBe('declined');
+    await expect(
+      firstValueFrom(
+        http.post<ConfirmPaymentResponse>('/payments/confirm', {
+          paymentIntentId: intent.paymentIntentId,
+          clientSecret: intent.clientSecret,
+          paymentMethod: {
+            cardNumber: '4000000000000002',
+            cardholderName: 'Casey Smith',
+            expiryMonth: '10',
+            expiryYear: '29',
+            cvc: '123',
+          },
+        }),
+      ),
+    ).rejects.toMatchObject({ status: 402 });
   });
 
   it('simulates transient failure on first confirm attempt and then succeeds', async () => {

@@ -2,6 +2,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { APP_CONFIG } from '../config/app-config.token';
+import { apiErrorInterceptor } from '../interceptors/api-error.interceptor';
 import { AuthService } from './auth.service';
 import { SESSION_STORAGE } from './session-storage.token';
 import { apiBaseUrlInterceptor } from '../interceptors/api-base-url.interceptor';
@@ -47,7 +48,12 @@ describe('AuthService', () => {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(
-          withInterceptors([apiBaseUrlInterceptor, authHeaderInterceptor, mockApiInterceptor]),
+          withInterceptors([
+            apiErrorInterceptor,
+            apiBaseUrlInterceptor,
+            authHeaderInterceptor,
+            mockApiInterceptor,
+          ]),
         ),
         {
           provide: APP_CONFIG,

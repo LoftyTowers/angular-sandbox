@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { DomainError, ResourceNotFoundError } from '../../core/error-handling/domain-errors';
 import { PageTitleComponent } from '../../shared/ui/page-title/page-title.component';
 import { BookingRecord, PaymentCheckoutService } from '../checkout/data/payment-checkout.service';
 
@@ -36,8 +36,10 @@ export class BookingConfirmationPageComponent {
       const booking = await firstValueFrom(this.paymentCheckoutService.getBookingById(bookingId));
       this.booking.set(booking);
     } catch (error: unknown) {
-      if (error instanceof HttpErrorResponse && error.status === 404) {
+      if (error instanceof ResourceNotFoundError) {
         this.errorMessage.set('Booking confirmation could not be found.');
+      } else if (error instanceof DomainError) {
+        this.errorMessage.set(error.userMessage);
       } else {
         this.errorMessage.set('Booking confirmation is unavailable right now.');
       }

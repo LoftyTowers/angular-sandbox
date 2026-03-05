@@ -1,6 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { INLINE_ERROR_HANDLING } from '../../../core/error-handling/http-error-context';
 
 export interface CreatePaymentIntentRequest {
   amount: number;
@@ -57,19 +58,26 @@ export interface BookingRecord {
 @Injectable({ providedIn: 'root' })
 export class PaymentCheckoutService {
   private readonly http = inject(HttpClient);
+  private readonly inlineErrorContext = new HttpContext().set(INLINE_ERROR_HANDLING, true);
 
   createPaymentIntent(
     payload: CreatePaymentIntentRequest,
   ): Observable<CreatePaymentIntentResponse> {
-    return this.http.post<CreatePaymentIntentResponse>('/payments/intent', payload);
+    return this.http.post<CreatePaymentIntentResponse>('/payments/intent', payload, {
+      context: this.inlineErrorContext,
+    });
   }
 
   confirmPayment(payload: ConfirmPaymentRequest): Observable<ConfirmPaymentResponse> {
-    return this.http.post<ConfirmPaymentResponse>('/payments/confirm', payload);
+    return this.http.post<ConfirmPaymentResponse>('/payments/confirm', payload, {
+      context: this.inlineErrorContext,
+    });
   }
 
   deliverWebhook(payload: PaymentWebhookRequest): Observable<PaymentWebhookResponse> {
-    return this.http.post<PaymentWebhookResponse>('/payments/webhook', payload);
+    return this.http.post<PaymentWebhookResponse>('/payments/webhook', payload, {
+      context: this.inlineErrorContext,
+    });
   }
 
   getBookingById(bookingId: string): Observable<BookingRecord> {

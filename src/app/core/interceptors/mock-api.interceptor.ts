@@ -559,16 +559,17 @@ function confirmPaymentIntent(request: HttpRequest<unknown>): Observable<HttpEve
 
   if (normalizedCardNumber === DECLINED_CARD_NUMBER) {
     paymentIntent.status = 'declined';
-    return of(
-      new HttpResponse<PaymentConfirmResponseBody>({
-        status: 200,
-        body: {
-          status: 'declined',
-          paymentIntentId: paymentIntent.id,
-          message: 'The payment method was declined by the issuer.',
-        },
-        url: request.url,
-      }),
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          status: 402,
+          statusText: 'Payment Required',
+          url: request.url,
+          error: {
+            code: 'PAYMENT_DECLINED',
+            message: 'The payment method was declined by the issuer.',
+          },
+        }),
     );
   }
 

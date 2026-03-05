@@ -5,6 +5,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { App } from './app';
 import { routes } from './app.routes';
 import { APP_CONFIG } from './core/config/app-config.token';
+import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { apiBaseUrlInterceptor } from './core/interceptors/api-base-url.interceptor';
 import { mockApiInterceptor } from './core/interceptors/mock-api.interceptor';
 
@@ -17,7 +18,9 @@ describe('App', () => {
       providers: [
         provideRouter(routes),
         provideNoopAnimations(),
-        provideHttpClient(withInterceptors([apiBaseUrlInterceptor, mockApiInterceptor])),
+        provideHttpClient(
+          withInterceptors([apiErrorInterceptor, apiBaseUrlInterceptor, mockApiInterceptor]),
+        ),
         {
           provide: APP_CONFIG,
           useValue: {

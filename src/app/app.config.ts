@@ -5,9 +5,11 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 import { provideAppConfig } from './core/config/app-config.providers';
 import { GlobalErrorHandler } from './core/error-handling/global-error-handler';
+import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { apiBaseUrlInterceptor } from './core/interceptors/api-base-url.interceptor';
 import { authHeaderInterceptor } from './core/interceptors/auth-header.interceptor';
 import { mockApiInterceptor } from './core/interceptors/mock-api.interceptor';
+import { provideMonitoringHook } from './core/monitoring/monitoring-hook';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,9 +17,15 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimations(),
     provideHttpClient(
-      withInterceptors([apiBaseUrlInterceptor, authHeaderInterceptor, mockApiInterceptor]),
+      withInterceptors([
+        apiErrorInterceptor,
+        apiBaseUrlInterceptor,
+        authHeaderInterceptor,
+        mockApiInterceptor,
+      ]),
     ),
     provideAppConfig(),
+    provideMonitoringHook(),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
   ],
 };

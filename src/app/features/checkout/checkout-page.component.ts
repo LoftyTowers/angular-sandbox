@@ -6,7 +6,6 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
   FormArray,
@@ -29,6 +28,12 @@ import { PromoCodeService } from './data/promo-code.service';
 import { PaymentCheckoutService } from './data/payment-checkout.service';
 import { AutofocusInvalidDirective } from '../../shared/directives/autofocus-invalid.directive';
 import { ToastService } from '../../core/services/toast.service';
+import {
+  DomainError,
+  PaymentDeclinedError,
+  ServiceUnavailableError,
+  ValidationError,
+} from '../../core/error-handling/domain-errors';
 
 interface BillingAddressFormControls {
   line1: FormControl<string>;
@@ -348,20 +353,20 @@ function sanitizeDigits(value: string, maxLength: number): string {
 }
 
 function mapSubmitErrorToMessage(error: unknown): string {
-  if (!(error instanceof HttpErrorResponse)) {
-    return 'Payment could not be completed right now. Please try again.';
+  if (error instanceof PaymentDeclinedError) {
+    return error.userMessage;
   }
 
-  if (error.status === 503) {
-    return 'Payment service is temporarily unavailable. Please retry in a moment.';
-  }
-
-  if (error.status === 400) {
+  if (error instanceof ValidationError) {
     return 'Payment details were invalid. Please review and try again.';
   }
 
-  if (error.status === 409) {
-    return 'Payment was not finalized for booking. Please try confirming again.';
+  if (error instanceof ServiceUnavailableError) {
+    return 'Payment service is temporarily unavailable. Please retry in a moment.';
+  }
+
+  if (error instanceof DomainError) {
+    return error.userMessage;
   }
 
   return 'Payment could not be completed right now. Please try again.';

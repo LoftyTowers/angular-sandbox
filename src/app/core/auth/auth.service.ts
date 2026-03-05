@@ -1,10 +1,12 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { catchError, map, of, tap } from 'rxjs';
 import { AuthSession, JwtPayload, LoginRequest, LoginResponse, UserRole } from './auth.models';
 import { inject } from '@angular/core';
 import { SESSION_STORAGE } from './session-storage.token';
+import { INLINE_ERROR_HANDLING } from '../error-handling/http-error-context';
+import { LoggerService } from '../services/logger.service';
 
 const SESSION_TOKEN_KEY = 'auth_token';
 
@@ -12,6 +14,7 @@ const SESSION_TOKEN_KEY = 'auth_token';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly sessionStorage = inject(SESSION_STORAGE);
+  private readonly logger = inject(LoggerService);
   private readonly authStateSignal = signal<AuthSession | null>(this.restoreSession());
 
   readonly authState = this.authStateSignal.asReadonly();
@@ -19,10 +22,14 @@ export class AuthService {
   readonly isAuthenticated = mapReadonlySignal(this.authState, (session) => session !== null);
 
   login(payload: LoginRequest) {
-    return this.http.post<LoginResponse>('/auth/login', payload).pipe(
-      map((response) => this.toSession(response)),
-      tap((session) => this.persistSession(session)),
-    );
+    return this.http
+      .post<LoginResponse>('/auth/login', payload, {
+        context: new HttpContext().set(INLINE_ERROR_HANDLING, true),
+      })
+      .pipe(
+        map((response) => this.toSession(response)),
+        tap((session) => this.persistSession(session)),
+      );
   }
 
   logout() {
@@ -66,6 +73,7 @@ export class AuthService {
   private toSession(response: LoginResponse): AuthSession {
     const payload = decodeJwtPayload(response.token);
     if (!payload) {
+      this.logger.error('Login response token is malformed.');
       throw new Error('Login response token is malformed.');
     }
 
