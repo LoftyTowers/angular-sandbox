@@ -84,6 +84,18 @@ function handleMockGetRequest(
     );
   }
 
+  const promoCode = extractPromoCode(pathname);
+  if (promoCode) {
+    const validPromoCodes = new Set(['save10', 'earlybird', 'vip20']);
+    return of(
+      new HttpResponse<{ valid: boolean }>({
+        status: 200,
+        body: { valid: validPromoCodes.has(promoCode.toLowerCase()) },
+        url: request.url,
+      }),
+    );
+  }
+
   const workshopId = extractWorkshopId(pathname);
   if (workshopId) {
     const workshop = MOCK_WORKSHOPS.find((candidate) => candidate.id === workshopId);
@@ -127,4 +139,10 @@ function extractWorkshopId(pathname: string): string | null {
   const match = /^\/api\/workshops\/([^/]+)$/.exec(pathname);
   const workshopId = match?.[1];
   return workshopId ? decodeURIComponent(workshopId) : null;
+}
+
+function extractPromoCode(pathname: string): string | null {
+  const match = /^\/api\/promo\/([^/]+)$/.exec(pathname);
+  const promoCode = match?.[1];
+  return promoCode ? decodeURIComponent(promoCode) : null;
 }

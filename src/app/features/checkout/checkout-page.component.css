@@ -1,0 +1,64 @@
+section {
+  display: grid;
+  gap: 1rem;
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+}
+
+fieldset {
+  border: 1px solid #d6d8db;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.attendees {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.attendee-row {
+  align-items: center;
+  grid-template-columns: 1fr auto;
+}
+
+.attendee-row label,
+.attendee-row p {
+  grid-column: 1 / -1;
+}
+
+.checkbox-field label {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.field-error {
+  color: #a00000;
+  margin: 0;
+}
+
+.field-hint {
+  color: #555;
+  margin: 0;
+}
+
+.form-summary {
+  background: #fff3f3;
+  border: 1px solid #ffc9c9;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.success-message {
+  color: #0a6a2b;
+  margin: 0;
+}

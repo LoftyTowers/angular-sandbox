@@ -1,7 +1,10 @@
 import { CanDeactivateFn } from '@angular/router';
-import { CheckoutPageComponent } from '../../features/checkout/checkout-page.component';
 
-export const unsavedChangesGuard: CanDeactivateFn<CheckoutPageComponent> = (component) => {
+export interface HasPendingChanges {
+  hasPendingChanges(): boolean;
+}
+
+export const unsavedChangesGuard: CanDeactivateFn<HasPendingChanges> = (component) => {
   if (!component.hasPendingChanges()) {
     return true;
   }

@@ -1,8 +1,260 @@
 <section>
-  <app-page-title title="Checkout" subtitle="Payment flow is out of scope for this task" />
-  <form [formGroup]="checkoutForm">
-    <label for="attendeeName">Attendee name</label>
-    <input id="attendeeName" formControlName="attendeeName" />
+  <app-page-title title="Checkout" subtitle="Review details before payment" />
+
+  @if (hasSummary()) {
+    <section class="form-summary" aria-live="polite">
+      <h2>Form summary</h2>
+      <ul>
+        @for (message of formSummaryErrors(); track message) {
+          <li>{{ message }}</li>
+        }
+      </ul>
+    </section>
+  }
+
+  <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="field">
+      <label for="customerName">Customer name</label>
+      <input
+        id="customerName"
+        type="text"
+        formControlName="customerName"
+        [attr.aria-describedby]="
+          showErrors(checkoutForm.controls.customerName) ? 'customerName-error' : null
+        "
+      />
+      @if (showErrors(checkoutForm.controls.customerName)) {
+        <p id="customerName-error" class="field-error" aria-live="polite">
+          @if (checkoutForm.controls.customerName.hasError('required')) {
+            Customer name is required.
+          } @else if (checkoutForm.controls.customerName.hasError('maxlength')) {
+            Customer name is too long.
+          } @else if (checkoutForm.controls.customerName.hasError('forbiddenWords')) {
+            Customer name contains blocked words.
+          }
+        </p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        [attr.aria-describedby]="showErrors(checkoutForm.controls.email) ? 'email-error' : null"
+      />
+      @if (showErrors(checkoutForm.controls.email)) {
+        <p id="email-error" class="field-error" aria-live="polite">
+          @if (checkoutForm.controls.email.hasError('required')) {
+            Email is required.
+          } @else if (checkoutForm.controls.email.hasError('email')) {
+            Enter a valid email address.
+          } @else if (checkoutForm.controls.email.hasError('maxlength')) {
+            Email is too long.
+          }
+        </p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="phone">Phone (optional)</label>
+      <input
+        id="phone"
+        type="tel"
+        formControlName="phone"
+        [attr.aria-describedby]="showErrors(checkoutForm.controls.phone) ? 'phone-error' : null"
+      />
+      @if (showErrors(checkoutForm.controls.phone)) {
+        <p id="phone-error" class="field-error" aria-live="polite">Phone is too long.</p>
+      }
+    </div>
+
+    <fieldset formGroupName="billingAddress">
+      <legend>Billing address</legend>
+
+      <div class="field">
+        <label for="billingLine1">Address line 1</label>
+        <input
+          id="billingLine1"
+          type="text"
+          formControlName="line1"
+          [attr.aria-describedby]="
+            showErrors(checkoutForm.controls.billingAddress.controls.line1)
+              ? 'billingLine1-error'
+              : null
+          "
+        />
+        @if (showErrors(checkoutForm.controls.billingAddress.controls.line1)) {
+          <p id="billingLine1-error" class="field-error" aria-live="polite">
+            @if (checkoutForm.controls.billingAddress.controls.line1.hasError('required')) {
+              Address line 1 is required.
+            } @else if (checkoutForm.controls.billingAddress.controls.line1.hasError('maxlength')) {
+              Address line 1 is too long.
+            } @else if (
+              checkoutForm.controls.billingAddress.controls.line1.hasError('forbiddenWords')
+            ) {
+              Address line 1 contains blocked words.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="billingLine2">Address line 2 (optional)</label>
+        <input id="billingLine2" type="text" formControlName="line2" />
+      </div>
+
+      <div class="field">
+        <label for="billingCity">City</label>
+        <input
+          id="billingCity"
+          type="text"
+          formControlName="city"
+          [attr.aria-describedby]="
+            showErrors(checkoutForm.controls.billingAddress.controls.city)
+              ? 'billingCity-error'
+              : null
+          "
+        />
+        @if (showErrors(checkoutForm.controls.billingAddress.controls.city)) {
+          <p id="billingCity-error" class="field-error" aria-live="polite">
+            @if (checkoutForm.controls.billingAddress.controls.city.hasError('required')) {
+              City is required.
+            } @else if (checkoutForm.controls.billingAddress.controls.city.hasError('maxlength')) {
+              City is too long.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="billingPostalCode">Postal code</label>
+        <input
+          id="billingPostalCode"
+          type="text"
+          formControlName="postalCode"
+          [attr.aria-describedby]="
+            showErrors(checkoutForm.controls.billingAddress.controls.postalCode)
+              ? 'billingPostalCode-error'
+              : null
+          "
+        />
+        @if (showErrors(checkoutForm.controls.billingAddress.controls.postalCode)) {
+          <p id="billingPostalCode-error" class="field-error" aria-live="polite">
+            @if (checkoutForm.controls.billingAddress.controls.postalCode.hasError('required')) {
+              Postal code is required.
+            } @else if (
+              checkoutForm.controls.billingAddress.controls.postalCode.hasError('maxlength')
+            ) {
+              Postal code is too long.
+            }
+          </p>
+        }
+      </div>
+    </fieldset>
+
+    <div class="field">
+      <label for="promoCode">Promo code (optional)</label>
+      <input
+        id="promoCode"
+        type="text"
+        formControlName="promoCode"
+        [attr.aria-describedby]="
+          showErrors(checkoutForm.controls.promoCode) ? 'promoCode-error' : null
+        "
+      />
+      @if (checkoutForm.controls.promoCode.pending) {
+        <p class="field-hint">Validating promo code...</p>
+      }
+      @if (showErrors(checkoutForm.controls.promoCode)) {
+        <p id="promoCode-error" class="field-error" aria-live="polite">
+          @if (checkoutForm.controls.promoCode.hasError('invalidPromoCode')) {
+            Promo code is invalid.
+          } @else if (checkoutForm.controls.promoCode.hasError('promoCodeValidationUnavailable')) {
+            Promo validation is temporarily unavailable.
+          } @else if (checkoutForm.controls.promoCode.hasError('maxlength')) {
+            Promo code is too long.
+          } @else if (checkoutForm.controls.promoCode.hasError('forbiddenWords')) {
+            Promo code contains blocked words.
+          }
+        </p>
+      }
+      @if (
+        checkoutForm.hasError('promoRequiresNonDisposableEmail') &&
+        (checkoutForm.controls.email.touched ||
+          checkoutForm.controls.email.dirty ||
+          checkoutForm.controls.promoCode.touched ||
+          checkoutForm.controls.promoCode.dirty)
+      ) {
+        <p class="field-error" aria-live="polite">
+          Disposable email domains cannot be used with promo codes.
+        </p>
+      }
+    </div>
+
+    <section formArrayName="attendeeNames" class="attendees">
+      <h2>Attendees</h2>
+      <p>Suggested names from basket quantity: {{ expectedAttendeeCount() }}</p>
+
+      @if (attendeeNames.length === 0) {
+        <p>Add at least one attendee.</p>
+      }
+
+      @for (control of attendeeNames.controls; track $index) {
+        <div class="field attendee-row">
+          <label [for]="'attendeeName-' + $index">Attendee {{ $index + 1 }}</label>
+          <input
+            [id]="'attendeeName-' + $index"
+            type="text"
+            [formControlName]="$index"
+            [attr.aria-describedby]="showErrors(control) ? 'attendeeName-error-' + $index : null"
+          />
+          <button type="button" (click)="removeAttendee($index)">Remove</button>
+          @if (showErrors(control)) {
+            <p [id]="'attendeeName-error-' + $index" class="field-error" aria-live="polite">
+              @if (control.hasError('required')) {
+                Attendee name is required.
+              } @else if (control.hasError('maxlength')) {
+                Attendee name is too long.
+              } @else if (control.hasError('forbiddenWords')) {
+                Attendee name contains blocked words.
+              }
+            </p>
+          }
+        </div>
+      }
+
+      <button type="button" (click)="addAttendee()">Add attendee</button>
+    </section>
+
+    <div class="field checkbox-field">
+      <label for="acceptTerms">
+        <input
+          id="acceptTerms"
+          type="checkbox"
+          formControlName="acceptTerms"
+          [attr.aria-describedby]="
+            showErrors(checkoutForm.controls.acceptTerms) ? 'acceptTerms-error' : null
+          "
+        />
+        I accept the terms and conditions
+      </label>
+      @if (showErrors(checkoutForm.controls.acceptTerms)) {
+        <p id="acceptTerms-error" class="field-error" aria-live="polite">
+          You must accept the terms before submitting.
+        </p>
+      }
+    </div>
+
+    <button type="submit" [disabled]="checkoutForm.invalid || checkoutForm.pending">
+      Complete checkout
+    </button>
   </form>
+
+  @if (submitMessage(); as message) {
+    <p class="success-message" aria-live="polite">{{ message }}</p>
+  }
+
   <p>Unsaved changes guard is active on this route.</p>
 </section>
