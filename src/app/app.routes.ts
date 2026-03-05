@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { authMatchGuard } from './core/guards/auth-match.guard';
+import { adminGuard } from './core/guards/admin.guard';
 import { ShellLayoutComponent } from './features/shell/shell-layout.component';
 
 export const routes: Routes = [
@@ -35,7 +36,7 @@ export const routes: Routes = [
       {
         path: 'admin',
         canMatch: [authMatchGuard],
-        canActivate: [authGuard],
+        canActivate: [authGuard, adminGuard],
         loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
       },
     ],

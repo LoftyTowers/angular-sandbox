@@ -40,6 +40,33 @@ interface MockBookingRecord {
   createdAt: string;
 }
 
+type UserRole = 'user' | 'admin';
+
+interface MockUserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+}
+
+interface MockLoginRequestBody {
+  email: string;
+  password: string;
+}
+
+interface MockLoginResponseBody {
+  token: string;
+  profile: MockUserProfile;
+}
+
+interface MockTokenPayload {
+  sub: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  exp: number;
+}
+
 interface PaymentIntentRequestBody {
   amount: number;
   currency: string;
@@ -86,6 +113,26 @@ const paymentIntents = new Map<string, MockPaymentIntent>();
 const processedWebhookEvents = new Set<string>();
 const bookingIdByIntentId = new Map<string, string>();
 const bookingsById = new Map<string, MockBookingRecord>();
+const knownUsers = new Map<string, MockUserProfile>([
+  [
+    'demo@workshops.test',
+    {
+      id: 'usr_demo',
+      email: 'demo@workshops.test',
+      displayName: 'Demo User',
+      role: 'user',
+    },
+  ],
+  [
+    'admin@workshops.test',
+    {
+      id: 'usr_admin',
+      email: 'admin@workshops.test',
+      displayName: 'Admin User',
+      role: 'admin',
+    },
+  ],
+]);
 let paymentIntentCounter = 0;
 let bookingCounter = 0;
 
@@ -173,6 +220,42 @@ function handleMockGetRequest(
   pathname: string,
   request: HttpRequest<unknown>,
 ): Observable<HttpEvent<unknown>> {
+  if (pathname === '/api/account/bookings') {
+    let tokenPayload: MockTokenPayload;
+    try {
+      tokenPayload = getAuthorizedTokenPayload(request);
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        return throwError(() => error);
+      }
+
+      return throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            statusText: 'Unauthorized',
+            url: request.url,
+            error: { message: 'Invalid auth state.' },
+          }),
+      );
+    }
+
+    const bookings =
+      tokenPayload.role === 'admin'
+        ? Array.from(bookingsById.values())
+        : Array.from(bookingsById.values()).filter(
+            (booking) => booking.customerEmail.toLowerCase() === tokenPayload.email.toLowerCase(),
+          );
+
+    return of(
+      new HttpResponse<readonly MockBookingRecord[]>({
+        status: 200,
+        body: bookings,
+        url: request.url,
+      }),
+    );
+  }
+
   if (pathname === '/api/bookings') {
     return of(
       new HttpResponse<readonly MockBookingRecord[]>({
@@ -278,6 +361,20 @@ function handleMockPostRequest(
   pathname: string,
   request: HttpRequest<unknown>,
 ): Observable<HttpEvent<unknown>> {
+  if (pathname === '/api/auth/login') {
+    return handleLogin(request);
+  }
+
+  if (pathname === '/api/auth/logout') {
+    return of(
+      new HttpResponse<null>({
+        status: 204,
+        body: null,
+        url: request.url,
+      }),
+    );
+  }
+
   if (pathname === '/api/payments/intent') {
     return createPaymentIntent(request);
   }
@@ -298,6 +395,66 @@ function handleMockPostRequest(
         url: request.url,
         error: { message: 'Mock API endpoint not found.' },
       }),
+  );
+}
+
+function handleLogin(request: HttpRequest<unknown>): Observable<HttpEvent<unknown>> {
+  const body = request.body as Partial<MockLoginRequestBody> | null;
+  if (!body || !isNonEmptyString(body.email) || !isNonEmptyString(body.password)) {
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          status: 400,
+          statusText: 'Bad Request',
+          url: request.url,
+          error: { message: 'Email and password are required.' },
+        }),
+    );
+  }
+
+  if (body.password.length < 8) {
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          status: 401,
+          statusText: 'Unauthorized',
+          url: request.url,
+          error: { message: 'Invalid credentials.' },
+        }),
+    );
+  }
+
+  const user = knownUsers.get(body.email.trim().toLowerCase());
+  if (!user) {
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          status: 401,
+          statusText: 'Unauthorized',
+          url: request.url,
+          error: { message: 'Invalid credentials.' },
+        }),
+    );
+  }
+
+  const expiresAtSeconds = Math.floor(Date.now() / 1000) + 60 * 60;
+  const token = buildMockJwt({
+    sub: user.id,
+    email: user.email,
+    name: user.displayName,
+    role: user.role,
+    exp: expiresAtSeconds,
+  });
+
+  return of(
+    new HttpResponse<MockLoginResponseBody>({
+      status: 200,
+      body: {
+        token,
+        profile: user,
+      },
+      url: request.url,
+    }),
   );
 }
 
@@ -520,6 +677,31 @@ function getPathName(url: string): string {
   return new URL(url, 'http://localhost').pathname;
 }
 
+function getAuthorizedTokenPayload(request: HttpRequest<unknown>): MockTokenPayload {
+  const authorization = request.headers.get('Authorization');
+  if (!authorization?.startsWith('Bearer ')) {
+    throw new HttpErrorResponse({
+      status: 401,
+      statusText: 'Unauthorized',
+      url: request.url ?? undefined,
+      error: { message: 'Missing Authorization header.' },
+    });
+  }
+
+  const token = authorization.slice('Bearer '.length).trim();
+  const payload = decodeMockJwtPayload(token);
+  if (!payload || payload.exp * 1000 <= Date.now()) {
+    throw new HttpErrorResponse({
+      status: 401,
+      statusText: 'Unauthorized',
+      url: request.url ?? undefined,
+      error: { message: 'Token is invalid or expired.' },
+    });
+  }
+
+  return payload;
+}
+
 function extractWorkshopId(pathname: string): string | null {
   const match = /^\/api\/workshops\/([^/]+)$/.exec(pathname);
   const workshopId = match?.[1];
@@ -544,4 +726,45 @@ function isFiniteAmount(value: unknown): value is number {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function buildMockJwt(payload: MockTokenPayload): string {
+  const header = encodeBase64Url(JSON.stringify({ alg: 'none', typ: 'JWT' }));
+  const body = encodeBase64Url(JSON.stringify(payload));
+  return `${header}.${body}.mock`;
+}
+
+function decodeMockJwtPayload(token: string): MockTokenPayload | null {
+  const segments = token.split('.');
+  if (segments.length < 2) {
+    return null;
+  }
+
+  try {
+    const json = decodeBase64Url(segments[1] ?? '');
+    const parsed = JSON.parse(json) as Partial<MockTokenPayload>;
+    if (
+      typeof parsed.sub !== 'string' ||
+      typeof parsed.email !== 'string' ||
+      typeof parsed.name !== 'string' ||
+      (parsed.role !== 'user' && parsed.role !== 'admin') ||
+      typeof parsed.exp !== 'number'
+    ) {
+      return null;
+    }
+
+    return parsed as MockTokenPayload;
+  } catch {
+    return null;
+  }
+}
+
+function encodeBase64Url(value: string): string {
+  return btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function decodeBase64Url(value: string): string {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+  return atob(padded);
 }

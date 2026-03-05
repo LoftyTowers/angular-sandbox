@@ -1,4 +1,16 @@
 <section>
   <app-page-title title="My Bookings" subtitle="Upcoming and past workshop sessions" />
-  <p>No bookings yet. Bookings history will be loaded from API in a later task.</p>
+
+  @if (bookings().length === 0) {
+    <p>No bookings found for your account yet.</p>
+  } @else {
+    <ul>
+      @for (booking of bookings(); track booking.id) {
+        <li>
+          <strong>{{ booking.id }}</strong>
+          <span> {{ booking.customerName }} - {{ booking.amount }} {{ booking.currency }} </span>
+        </li>
+      }
+    </ul>
+  }
 </section>

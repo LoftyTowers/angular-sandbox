@@ -51,7 +51,10 @@ export class ShellLayoutComponent {
   }
 
   protected signOut(): void {
-    this.auth.logout();
-    void this.router.navigate(['/account/login']);
+    this.auth.logout().subscribe({
+      next: () => {
+        void this.router.navigate(['/account/login']);
+      },
+    });
   }
 }

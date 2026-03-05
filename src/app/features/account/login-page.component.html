@@ -1,5 +1,30 @@
 <section>
   <app-page-title title="Login" subtitle="Sign in to continue to your bookings and admin tools" />
-  <p>This demo uses a local auth stub and does not call a backend.</p>
-  <button type="button" (click)="signIn()">Sign in (stub)</button>
+
+  <form [formGroup]="loginForm" (ngSubmit)="signIn()" novalidate>
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" autocomplete="username" />
+    @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+      <p>Email is required and must be valid.</p>
+    }
+
+    <label for="password">Password</label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      autocomplete="current-password"
+    />
+    @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+      <p>Password is required and must be at least 8 characters.</p>
+    }
+
+    @if (loginError) {
+      <p>{{ loginError }}</p>
+    }
+
+    <button type="submit" [disabled]="loginForm.invalid">Sign in</button>
+  </form>
+
+  <p>Demo users: demo@workshops.test / password123 and admin@workshops.test / password123</p>
 </section>
