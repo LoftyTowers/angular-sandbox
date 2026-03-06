@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ToastMessage, ToastService } from '../../../core/services/toast.service';
 
@@ -22,8 +23,25 @@ import { ToastMessage, ToastService } from '../../../core/services/toast.service
 })
 export class ToastHostComponent {
   private readonly toastService = inject(ToastService);
+  private readonly liveAnnouncer = inject(LiveAnnouncer);
+  private lastAnnouncedToastId = 0;
 
   protected readonly toasts = this.toastService.toasts;
+
+  constructor() {
+    effect(() => {
+      const nextToast = this.toasts().find((toast) => toast.id > this.lastAnnouncedToastId);
+      if (!nextToast) {
+        return;
+      }
+
+      this.lastAnnouncedToastId = nextToast.id;
+      void this.liveAnnouncer.announce(
+        nextToast.message,
+        nextToast.tone === 'error' ? 'assertive' : 'polite',
+      );
+    });
+  }
 
   protected trackById(_: number, toast: ToastMessage): number {
     return toast.id;

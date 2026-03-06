@@ -1,6 +1,6 @@
-# Angular Sandbox (TSK-01)
+# Workshop Booking & Payments App
 
-Baseline Angular 21.0.0 sandbox for Team Tasks with a Docker-first workflow.
+Production-shaped Angular 21 workspace for workshop catalog, basket, checkout, and booking confirmation.
 
 ## Prerequisites
 
@@ -20,6 +20,39 @@ docker compose up app
 
 The app is available at `http://localhost:4200`.
 
+## Production Build (Prerender Strategy)
+
+This app uses **prerendered static output** for key marketing routes:
+- `/`
+- `/catalog`
+
+The route list is maintained in `src/prerender-routes.txt`.
+
+Run:
+
+```powershell
+npm run build
+```
+
+Build output is generated under `dist/angular-sandbox/browser`.
+
+## i18n
+
+- Source locale: `en-GB`
+- Additional locale: `fr`
+
+Extract translation messages:
+
+```powershell
+npm run i18n:extract
+```
+
+Build localized bundles:
+
+```powershell
+npm run build:localize
+```
+
 ## Run Individual Checks (Docker)
 
 ```powershell
@@ -34,4 +67,14 @@ docker compose run --rm app npm run build
 pwsh tools/verify/Invoke-All.ps1
 ```
 
-The verification script runs `lint -> test -> build` and stops on first failure.
+The verification script runs `format:check -> lint -> test:ci -> build` and stops on first failure.
+
+## Production Docker Path
+
+Build and run the production image:
+
+```powershell
+docker compose --profile production up --build app-prod
+```
+
+The production app is served at `http://localhost:8080`.

@@ -1,0 +1,13 @@
+{
+  "defaults": {
+    "standard": "WCAG2AA",
+    "timeout": 30000,
+    "wait": 1000
+  },
+  "urls": [
+    "http://127.0.0.1:4173/catalog",
+    "http://127.0.0.1:4173/basket",
+    "http://127.0.0.1:4173/checkout",
+    "http://127.0.0.1:4173/account/login"
+  ]
+}

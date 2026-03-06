@@ -13,10 +13,10 @@
     <p>{{ bookingRecord.customerName }}, your workshop booking is confirmed.</p>
     <p>
       Receipt sent to <strong>{{ bookingRecord.customerEmail }}</strong
-      >. Amount paid:
-      <strong>{{ bookingRecord.currency }} {{ bookingRecord.amount.toFixed(2) }}</strong
+      >. Amount paid: <strong>{{ bookingRecord.amount | currency: bookingRecord.currency }}</strong
       >.
     </p>
+    <p>Paid on {{ bookingRecord.createdAt | date: 'fullDate' }}</p>
     <p><a routerLink="/account/bookings">Go to bookings</a></p>
   }
 </section>

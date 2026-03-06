@@ -1,4 +1,7 @@
 <div class="shell">
+  <a class="skip-link" href="#main-content" aria-label="Skip to main content">
+    Skip to main content
+  </a>
   <header class="shell-header">
     <a class="brand" routerLink="/catalog">Workshop Booking</a>
 
@@ -21,7 +24,7 @@
     <div class="route-loading" aria-live="polite">Navigating...</div>
   }
 
-  <main class="shell-content" [@routeTransition]="routeKey(outlet)">
+  <main id="main-content" class="shell-content" tabindex="-1" [@routeTransition]="routeKey(outlet)">
     <router-outlet #outlet="outlet" />
   </main>
 

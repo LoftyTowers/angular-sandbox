@@ -1,6 +1,6 @@
 import { Workshop } from '../../models/workshop.model';
 
-export const MOCK_WORKSHOPS: readonly Workshop[] = [
+const WORKSHOP_SEEDS: readonly Workshop[] = [
   {
     id: 'ws-angular-fundamentals',
     title: 'Angular Fundamentals',
@@ -37,6 +37,30 @@ export const MOCK_WORKSHOPS: readonly Workshop[] = [
     tags: ['frontend', 'a11y', 'angular'],
     description: 'Ship inclusive interfaces using practical accessibility heuristics and testing.',
   },
+];
+
+const SYNTHETIC_WORKSHOP_COUNT = 1200;
+
+function buildSyntheticWorkshops(): readonly Workshop[] {
+  return Array.from({ length: SYNTHETIC_WORKSHOP_COUNT }, (_, index) => {
+    const seed = WORKSHOP_SEEDS[index % WORKSHOP_SEEDS.length]!;
+    const sequence = index + 1;
+
+    return {
+      id: `${seed.id}-${sequence}`,
+      title: `${seed.title} ${sequence}`,
+      level: seed.level,
+      durationHours: seed.durationHours,
+      price: seed.price + (sequence % 5) * 5,
+      tags: [...seed.tags],
+      description: seed.description,
+    };
+  });
+}
+
+export const MOCK_WORKSHOPS: readonly Workshop[] = [
+  ...WORKSHOP_SEEDS,
+  ...buildSyntheticWorkshops(),
 ];
 
 export const MOCK_TAGS: readonly string[] = Array.from(

@@ -28,6 +28,7 @@ import { PromoCodeService } from './data/promo-code.service';
 import { PaymentCheckoutService } from './data/payment-checkout.service';
 import { AutofocusInvalidDirective } from '../../shared/directives/autofocus-invalid.directive';
 import { ToastService } from '../../core/services/toast.service';
+import { SeoService } from '../../core/services/seo.service';
 import {
   DomainError,
   PaymentDeclinedError,
@@ -77,6 +78,7 @@ export class CheckoutPageComponent {
   private readonly promoCodeService = inject(PromoCodeService);
   private readonly paymentCheckoutService = inject(PaymentCheckoutService);
   private readonly toastService = inject(ToastService);
+  private readonly seoService = inject(SeoService);
 
   protected readonly expectedAttendeeCount = this.basketStore.totalQuantity;
   protected readonly submitAttempted = signal(false);
@@ -139,6 +141,11 @@ export class CheckoutPageComponent {
   );
   protected readonly attendeeNames = this.checkoutForm.controls.attendeeNames;
   protected readonly hasSummary = computed(() => this.formSummaryErrors().length > 0);
+
+  constructor() {
+    this.seoService.setTitle('Checkout | Workshop Booking');
+    this.seoService.setDescription('Complete your workshop booking payment securely.');
+  }
 
   hasPendingChanges(): boolean {
     return this.checkoutForm.dirty;

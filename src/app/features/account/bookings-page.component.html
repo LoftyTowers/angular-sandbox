@@ -8,7 +8,10 @@
       @for (booking of bookings(); track booking.id) {
         <li>
           <strong>{{ booking.id }}</strong>
-          <span> {{ booking.customerName }} - {{ booking.amount }} {{ booking.currency }} </span>
+          <span>
+            {{ booking.customerName }} - {{ booking.amount | currency: booking.currency }} -
+            {{ booking.createdAt | date: 'mediumDate' }}
+          </span>
         </li>
       }
     </ul>

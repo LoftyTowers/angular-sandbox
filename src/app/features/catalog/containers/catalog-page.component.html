@@ -1,6 +1,8 @@
 <section>
   <app-page-title
+    i18n-title
     title="Workshop Catalog"
+    i18n-subtitle
     subtitle="Browse workshops and add sessions to your basket"
   />
 
@@ -25,16 +27,25 @@
   <p class="basket-hint">Selected for basket: {{ selectedCount() }}</p>
 
   @if (error()) {
-    <p class="error-message">{{ error() }}</p>
+    <p class="error-message" role="alert">{{ error() }}</p>
   }
 
   @if (loading()) {
     <p class="loading-message">Loading workshops...</p>
   }
 
-  <div class="workshop-grid">
-    @for (workshop of filteredWorkshops(); track workshop.id) {
-      <div class="catalog-item">
+  @if (useVirtualScroll()) {
+    <cdk-virtual-scroll-viewport
+      class="workshop-viewport"
+      itemSize="220"
+      minBufferPx="440"
+      maxBufferPx="880"
+      aria-label="Virtualized workshop results"
+    >
+      <div
+        class="catalog-item"
+        *cdkVirtualFor="let workshop of filteredWorkshops(); trackBy: trackWorkshopId"
+      >
         <app-workshop-card
           [workshop]="workshop"
           [currency]="currency()"
@@ -42,8 +53,21 @@
         />
         <a class="details-link" [routerLink]="['/catalog', workshop.id]">View details</a>
       </div>
-    } @empty {
-      <p>No workshops match this filter.</p>
-    }
-  </div>
+    </cdk-virtual-scroll-viewport>
+  } @else {
+    <div class="workshop-grid">
+      @for (workshop of filteredWorkshops(); track workshop.id) {
+        <div class="catalog-item">
+          <app-workshop-card
+            [workshop]="workshop"
+            [currency]="currency()"
+            (add)="onWorkshopAdded($event)"
+          />
+          <a class="details-link" [routerLink]="['/catalog', workshop.id]">View details</a>
+        </div>
+      } @empty {
+        <p>No workshops match this filter.</p>
+      }
+    </div>
+  }
 </section>

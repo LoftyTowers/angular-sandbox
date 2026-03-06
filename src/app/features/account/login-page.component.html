@@ -3,7 +3,7 @@
 
   <form [formGroup]="loginForm" (ngSubmit)="signIn()" novalidate>
     <label for="email">Email</label>
-    <input id="email" type="email" formControlName="email" autocomplete="username" />
+    <input id="email" type="email" formControlName="email" autocomplete="email" />
     @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
       <p>Email is required and must be valid.</p>
     }

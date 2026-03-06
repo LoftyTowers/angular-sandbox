@@ -11,6 +11,27 @@
   background: #f5f7fa;
 }
 
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.5rem;
+  transform: translateY(-200%);
+  background: #0f1728;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.35rem;
+  z-index: 999;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.skip-link:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
 .shell-header {
   display: flex;
   align-items: center;

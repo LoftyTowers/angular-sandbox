@@ -1,3 +1,4 @@
+import '@angular/localize/init';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';

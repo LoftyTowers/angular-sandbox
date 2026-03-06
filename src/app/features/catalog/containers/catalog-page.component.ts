@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { debounceTime, map, startWith } from 'rxjs/operators';
 import { APP_CONFIG } from '../../../core/config/app-config.token';
+import { SeoService } from '../../../core/services/seo.service';
 import { BasketStore } from '../../basket/data/basket.store';
 import { Workshop } from '../../../models/workshop.model';
 import { PageTitleComponent } from '../../../shared/ui/page-title/page-title.component';
@@ -13,7 +15,13 @@ import { CatalogStore } from '../data/catalog.store';
 @Component({
   selector: 'app-catalog-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, PageTitleComponent, WorkshopCardComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    PageTitleComponent,
+    WorkshopCardComponent,
+    ScrollingModule,
+  ],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +31,7 @@ export class CatalogPageComponent {
   private readonly appConfig = inject(APP_CONFIG);
   private readonly catalogStore = inject(CatalogStore);
   private readonly basketStore = inject(BasketStore);
+  private readonly seoService = inject(SeoService);
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   protected readonly selectedTag = signal<string | null>(null);
@@ -54,8 +63,30 @@ export class CatalogPageComponent {
   });
   protected readonly selectedCount = this.basketStore.totalQuantity;
   protected readonly currency = computed(() => this.appConfig.currency);
+  protected readonly useVirtualScroll = computed(() => this.filteredWorkshops().length >= 1000);
 
   constructor() {
+    this.seoService.setTitle('Workshop Catalog | Workshop Booking');
+    this.seoService.setDescription(
+      'Browse the workshop catalog, compare sessions, and add tickets to your basket.',
+    );
+    this.seoService.setOpenGraph({
+      title: 'Workshop Catalog',
+      description: 'Browse available workshops and reserve your place.',
+      url: '/catalog',
+      type: 'website',
+    });
+    this.seoService.setJsonLd('site-home', {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Workshop Booking & Payments',
+      url: '/',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: '/catalog',
+        'query-input': 'required name=workshop',
+      },
+    });
     this.catalogStore.load();
   }
 
@@ -65,5 +96,9 @@ export class CatalogPageComponent {
 
   protected selectTag(tag: string | null): void {
     this.selectedTag.set(tag);
+  }
+
+  protected trackWorkshopId(_: number, workshop: Workshop): string {
+    return workshop.id;
   }
 }

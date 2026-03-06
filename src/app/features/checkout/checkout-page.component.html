@@ -2,7 +2,7 @@
   <app-page-title title="Checkout" subtitle="Review details before payment" />
 
   @if (hasSummary()) {
-    <section class="form-summary" aria-live="polite">
+    <section class="form-summary" aria-live="polite" role="alert" aria-atomic="true">
       <h2>Form summary</h2>
       <ul>
         @for (message of formSummaryErrors(); track message) {
@@ -249,7 +249,7 @@
           <label for="cvc">CVC</label>
           <input
             id="cvc"
-            type="password"
+            type="text"
             inputmode="numeric"
             autocomplete="cc-csc"
             formControlName="cvc"
@@ -371,7 +371,7 @@
     <p class="success-message" aria-live="polite">{{ message }}</p>
   }
   @if (paymentErrorMessage(); as paymentError) {
-    <p class="field-error" aria-live="polite">{{ paymentError }}</p>
+    <p class="field-error" aria-live="assertive" role="alert">{{ paymentError }}</p>
   }
 
   <p>Unsaved changes guard is active on this route.</p>

@@ -1,4 +1,5 @@
 import { HttpClient } from '@angular/common/http';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
@@ -17,7 +18,7 @@ interface AccountBookingRecord {
 @Component({
   selector: 'app-bookings-page',
   standalone: true,
-  imports: [PageTitleComponent],
+  imports: [PageTitleComponent, CurrencyPipe, DatePipe],
   templateUrl: './bookings-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

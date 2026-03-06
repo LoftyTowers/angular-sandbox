@@ -3,11 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: dev
     entrypoint:
       - /bin/sh
       - -c
       - |
-        if [ ! -x node_modules/.bin/prettier ]; then npm ci --ignore-scripts; fi
+        npm ci --ignore-scripts
         exec "$@"
       - --
     working_dir: /workspace
@@ -17,6 +18,14 @@ services:
     ports:
       - '4200:4200'
     command: npm run serve
+  app-prod:
+    profiles: ['production']
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - '8080:80'
 
 volumes:
   app_node_modules:
