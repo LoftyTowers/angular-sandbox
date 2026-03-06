@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-GB" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="2036390810763402847" datatype="html">
+        <source>Workshop Catalog</source>
+        <target>Catalogue des ateliers</target>
+      </trans-unit>
+      <trans-unit id="4762004594682659832" datatype="html">
+        <source>Browse workshops and add sessions to your basket</source>
+        <target>Parcourez les ateliers et ajoutez des sessions à votre panier</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

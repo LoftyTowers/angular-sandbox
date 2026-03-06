@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en-GB">
+  <file id="ngi18n" original="ng.template">
+    <unit id="2036390810763402847">
+      <notes>
+        <note category="location">src/app/features/catalog/containers/catalog-page.component.html:4,5</note>
+      </notes>
+      <segment>
+        <source>Workshop Catalog</source>
+      </segment>
+    </unit>
+    <unit id="4762004594682659832">
+      <notes>
+        <note category="location">src/app/features/catalog/containers/catalog-page.component.html:6,9</note>
+      </notes>
+      <segment>
+        <source>Browse workshops and add sessions to your basket</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>
